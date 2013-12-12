@@ -18,6 +18,8 @@ from django.utils.module_loading import import_by_path
 from django.utils import six
 
 HIDDEN_SETTINGS = re.compile('API|TOKEN|KEY|SECRET|PASS|PROFANITIES_LIST|SIGNATURE')
+HIDDEN_URL_SETTING = re.compile('URL|ENDPOINT|LOCATION|ADDRESS|HOST|DSN')
+HIDDEN_URL_PROCESSOR = re.compile("(?<=[^:]:)[^@]+(?=@)")
 
 CLEANSED_SUBSTITUTE = '********************'
 
@@ -40,6 +42,8 @@ def cleanse_setting(key, value):
     try:
         if HIDDEN_SETTINGS.search(key):
             cleansed = CLEANSED_SUBSTITUTE
+        elif HIDDEN_URL_SETTING.search(key):
+            cleansed = HIDDEN_URL_PROCESSOR.sub(CLEANSED_SUBSTITUTE, value)
         else:
             if isinstance(value, dict):
                 cleansed = dict((k, cleanse_setting(k, v)) for k, v in value.items())
